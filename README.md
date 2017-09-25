@@ -163,6 +163,24 @@ config :rabbitmq_manager,
   - immediate : (boolean) Defaults to false.
 
 
+```elixir
+config :rabbitmq_manager,
+       producers: [
+         [
+          key: :product_in,
+           routing_key: "",
+           publish_options: [
+             persistent: false,
+           ],
+           confirm_mode: true,
+           queue: {"product_in_queue", [durable: true]},
+           exchange: {"product_in_exchange", :fanout, [durable: true]},
+           bindings: [
+             {:queue, "product_in_queue", "product_in_exchange", [routing_key: "", arguments: []]}
+           ]
+         ]
+       ]
+```
 ### Receiving module for consumers
 
 Each pattern of consumers must provide a receiving module which will handle the payload.
