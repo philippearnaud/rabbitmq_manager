@@ -165,7 +165,7 @@ config :rabbitmq_manager,
 
 ### Receiving module for consumers
 
-Each consumers must provide a receiving module which will handle the payload.
+Each pattern of consumers must provide a receiving module which will handle the payload.
 
 Here is how consuming is implemented :
 ```elixir
