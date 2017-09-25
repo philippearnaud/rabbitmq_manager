@@ -1,0 +1,28 @@
+# TODO(s)
+
+## Specs
+
+### System
+[] We must have only one connection per app
+[] We must have one channel per process (producer/consumer) : mapping 1:1
+[] App must not be shutted down if connection error
+[] User must know configuration errors
+[] App must restart in case of not hard error
+
+### CONNECTION
+[] Connection must be established outside init function of supervised module.
+[] Connection must be restarted if failed
+[] Supervised Connection process must have a stable state.
+
+### Consumer
+[] A consumer must open a channel, given a connection, and set the configuration (exchange, queue, errors, durable,
+persistent).
+[] A consumer must ask for a connection, the connection server must reply with the connection or an error message.
+[] If the consumer can't receive the connection, it must crash and must be restarted.
+[] If something goes wrong and it can't be repaired, process must crash and must be restarted.
+[] A consumer must be linked to a connection
+
+### Supervisor
+[] Must restart connection process when such process crash.
+
+
