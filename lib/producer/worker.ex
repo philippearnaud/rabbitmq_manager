@@ -68,7 +68,7 @@ defmodule RabbitsManager.Producer.Worker do
 
   def handle_call({:msg, payload, routing_key}, _from, state) do
     key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
-    Basic.publish(state[:channel], state[:exchange], key_rounting, payload, state[:publish_options])
+    Basic.publish(state[:channel], elem(state[:exchange], 0), key_rounting, payload, state[:publish_options])
     reply = Confirm.wait_for_confirms(state[:channel], Keyword.get(state, :confirm_timeout, 5_000))
     {:reply, reply, state}
   end
