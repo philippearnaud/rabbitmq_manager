@@ -41,7 +41,9 @@ defmodule RabbitsManager.Mixfile do
   defp deps do
     [
       {:amqp_client, "~> 3.6"},
-      {:amqp, "~> 0.3.0"}
+      {:amqp, "~> 0.3.0"},
+      {:ex_doc, ">= 0.0.0", only: :dev},
+      {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
     ]
   end
 end

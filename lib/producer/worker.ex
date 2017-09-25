@@ -1,4 +1,10 @@
 defmodule RabbitsManager.Producer.Worker do
+  @moduledoc """
+  Producer Worker.
+
+  A producer worker is started with a producer_pattern as arguments wich is all
+  informations defined in config file for the given consumers.
+  """
   require Logger
   use GenServer
   use AMQP
@@ -24,6 +30,7 @@ defmodule RabbitsManager.Producer.Worker do
     {:noreply, new_state}
   end
 
+  @spec init_consumer(list()) :: list()
   def init_consumer(state) do
     connection_result = ConnectionManager.get_connection()
     new_state = case connection_result do
@@ -38,6 +45,7 @@ defmodule RabbitsManager.Producer.Worker do
     end
   end
 
+  @spec setup_producer_config(list(), %Connection{}) :: {:ok, %Channel{}}
   def setup_producer_config(state, connection) do
     {:ok, channel} = Channel.open(connection)
     if Keyword.get(state, :confirm_mode, false) do
@@ -62,14 +70,17 @@ defmodule RabbitsManager.Producer.Worker do
 
   def handle_cast({:msg, payload, routing_key}, state) do
     key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
-    Basic.publish(state[:channel], elem(state[:exchange], 0), key_rounting, payload, state[:publish_options])
+    Basic.publish(state[:channel], elem(state[:exchange], 0),
+      key_rounting, payload, state[:publish_options])
     {:noreply, state}
   end
 
   def handle_call({:msg, payload, routing_key}, _from, state) do
     key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
-    Basic.publish(state[:channel], elem(state[:exchange], 0), key_rounting, payload, state[:publish_options])
-    reply = Confirm.wait_for_confirms(state[:channel], Keyword.get(state, :confirm_timeout, 5_000))
+    Basic.publish(state[:channel], elem(state[:exchange], 0),
+      key_rounting, payload, state[:publish_options])
+    reply = Confirm.wait_for_confirms(state[:channel],
+      Keyword.get(state, :confirm_timeout, 5_000))
     {:reply, reply, state}
   end
 end

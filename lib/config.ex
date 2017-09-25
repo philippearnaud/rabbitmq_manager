@@ -1,10 +1,14 @@
 defmodule RabbitsManager.Config do
+  @moduledoc """
+  Config helpers.
+  """
   alias RabbitsManager.{ConsumerConfigError, ProducerConfigError, StandardConfigError}
   alias RabbitsManager.Producer.Worker, as: ProducerWorker
   alias RabbitsManager.Consumer.Worker, as: ConsumerWorker
   use AMQP
   require Logger
 
+  @spec check!() :: any()
   def check!() do
     consumer_config = Application.get_env(:rabbitmq_manager, :consumers)
     producer_config = Application.get_env(:rabbitmq_manager, :producers)
@@ -19,7 +23,7 @@ defmodule RabbitsManager.Config do
     #        raise ConsumerConfigError, {"queue", "nil"}
     #      # At least one exchange in consumer must be set.
     #      !is_nil(consumer_config) && is_nil(Keyword.get(consumer_config, :exchanges)) ->
-    #        raise ConsumerConfigError, {"exchange", "nil"}
+    #   ex     raise ConsumerConfigError, {"exchange", "nil"}
     #      # At least one queue must be set in producer.
     #      !is_nil(producer_config) && is_nil(Keyword.get(producer_config, :queue)) ->
     #        raise ProducerConfigError, {"queue", "nil"}
@@ -31,8 +35,8 @@ defmodule RabbitsManager.Config do
     #    end
   end
 
-  @spec all_consumer_config_has_queue?() :: boolean
-  def all_consumer_config_has_queue?() do
+  @spec all_consumer_config_has_queue? :: boolean
+  def all_consumer_config_has_queue? do
     consumer_params()
     |> Enum.all?(
          fn (consumer) ->
@@ -41,33 +45,33 @@ defmodule RabbitsManager.Config do
        )
   end
 
-  @spec connection_params() :: list()
-  def connection_params() do
+  @spec connection_params :: list()
+  def connection_params do
     Application.fetch_env!(:rabbitmq_manager, :connection)
   end
 
-  @spec consumer_params() :: list()
-  def consumer_params() do
+  @spec consumer_params :: list()
+  def consumer_params do
     Application.get_env(:rabbitmq_manager, :consumers, [])
   end
 
-  @spec producer_params() :: list()
-  def producer_params() do
+  @spec producer_params :: list()
+  def producer_params do
     Application.get_env(:rabbitmq_manager, :producers, [])
   end
 
-  @spec consumer_workers_number() :: integer
-  def consumer_workers_number() do
-    consumer_config = consumer_params()
+  @spec consumer_workers_number :: integer
+  def consumer_workers_number do
+    consumer_config = consumer_params
     case Keyword.get(consumer_config, :workers) do
       nil -> 1
       value -> value
     end
   end
 
-  @spec create_consumers_supervised_specs() :: map()
-  def create_consumers_supervised_specs() do
-    consumer_params()
+  @spec create_consumers_supervised_specs :: map()
+  def create_consumers_supervised_specs do
+    consumer_params
     |> Enum.reduce(
          [],
          fn (consumer_pattern, acc) ->
@@ -92,9 +96,9 @@ defmodule RabbitsManager.Config do
        )
   end
 
-  @spec create_producers_supervised_specs() :: map()
-  def create_producers_supervised_specs() do
-    producer_params()
+  @spec create_producers_supervised_specs :: map()
+  def create_producers_supervised_specs do
+    producer_params
     |> Enum.map(
          fn (producer_pattern) ->
            %{

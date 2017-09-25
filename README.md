@@ -107,6 +107,47 @@ config :rabbitmq_manager,
 
  `:routing_key` Defaults to "".
  `:arguments` Defaults to [].
+ 
+ Here is an example : 
+ ```elixir
+ config :rabbitmq_manager,
+        consumers: [
+          [
+            workers: 2,
+            receive: ProductStore.Consumer,
+            prefetch_count: 35_000,
+            queue: {"product_in_queue", [durable: true]},
+            exchanges: [{"product_in_exchange", :fanout, [durable: true]}],
+            bindings: [
+              {:queue, "product_in_queue", "product_in_exchange", [routing_key: "", arguments: []]}
+            ]
+          ],
+          [
+            workers: 2,
+            receive: ProductStore1.Consumer,
+            prefetch_count: 35_000,
+            queue: {"product_in_queue_2", [durable: true]},
+            exchanges: [
+              {"product_in_exchange_2", :fanout, [durable: true]},
+              {"product_in_exchange_3", :topic, []}
+            ],
+            bindings: [
+              {
+                :queue,
+                "product_in_queue_2",
+                "product_in_exchange_2",
+                [routing_key: "", arguments: []]
+              },
+              {
+                :exchange,
+                "product_in_exchange_2",
+                "product_in_exchange_3",
+                [routing_key: "", arguments: []]
+              }
+            ]
+          ]
+        ]
+```
 
 #### Producers key
 
