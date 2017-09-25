@@ -89,24 +89,24 @@ config :rabbitmq_manager,
 
  QUEUE OPTIONS
 
- `:durable` (boolean) If set, keeps the Queue between restarts of the broker. Defaults to false.
- `:auto-delete` (boolean) If set, deletes the Queue once all subscribers disconnect. Defaults to false.
- `:exclusive` (boolean) If set, only one subscriber can consume from the Queue. Defaults to false.
- `:passive` (boolean) If set, raises an error unless the queue already exists. Defaults to false.
+- `:durable` (boolean) If set, keeps the Queue between restarts of the broker. Defaults to false.
+- `:auto-delete` (boolean) If set, deletes the Queue once all subscribers disconnect. Defaults to false.
+- `:exclusive` (boolean) If set, only one subscriber can consume from the Queue. Defaults to false.
+- `:passive` (boolean) If set, raises an error unless the queue already exists. Defaults to false.
 
  EXCHANGES OPTIONS
 
- `:passive` (boolean) Returns an error if the Exchange does not already exist. Defaults to false.
- `:durable` (boolean) Keeps the exchange between restarts of the broker. Defaults to false.
- `:auto_delete` (boolean) Delete the exchange once all queues unbind from it. Defaults to false.
- `:internal` (boolean) The exchange may not be used directly by publishers, but only
+- `:passive` (boolean) Returns an error if the Exchange does not already exist. Defaults to false.
+- `:durable` (boolean) Keeps the exchange between restarts of the broker. Defaults to false.
+- `:auto_delete` (boolean) Delete the exchange once all queues unbind from it. Defaults to false.
+- `:internal` (boolean) The exchange may not be used directly by publishers, but only
  when bound to others exchanges. Internal exchanges are used to construct wiring that is not visible
  to applications. Defaults to false.
 
  BINDINGS OPTIONS
 
- `:routing_key` Defaults to "".
- `:arguments` Defaults to [].
+- `:routing_key` Defaults to "".
+- `:arguments` Defaults to [].
  
  Here is an example : 
  ```elixir
