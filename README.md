@@ -170,18 +170,17 @@ Each consumers must provide a receiving module which will handle the payload.
 Here is how consuming is implemented :
 ```elixir
   defp consume(channel, tag, redelivered, payload, state) do
-    try do
-      case apply(state[:receive], :receive, [payload]) do
-        :ok ->
-          Basic.ack channel, tag
-        :error ->
-          Basic.reject channel, tag, requeue: false
-      end
-    rescue
-      # We requeue unless redelivered message.
-      exception ->
-        Basic.reject channel, tag, requeue: not redelivered
+    case apply(state[:receive], :receive, [payload]) do
+      :ok ->
+        Basic.ack channel, tag
+      :error ->
+        Basic.reject channel, tag, requeue: false
     end
+  rescue
+    # We requeue unless redelivered message.
+    exception ->
+      Basic.reject channel, tag, requeue: not redelivered
+      Logger.warn "#{inspect exception}"
   end
 ```
 
