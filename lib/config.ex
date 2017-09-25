@@ -6,9 +6,9 @@ defmodule RabbitsManager.Config do
   require Logger
 
   def check!() do
-    consumer_config = Application.get_env(:rabbits_manager, :consumers)
-    producer_config = Application.get_env(:rabbits_manager, :producers)
-    _auth_config = Application.get_env(:rabbits_manager, :connection)
+    consumer_config = Application.get_env(:rabbitmq_manager, :consumers)
+    producer_config = Application.get_env(:rabbitmq_manager, :producers)
+    _auth_config = Application.get_env(:rabbitmq_manager, :connection)
 
     #    cond do
     #      # A consumer or/and producer must be set.
@@ -43,17 +43,17 @@ defmodule RabbitsManager.Config do
 
   @spec connection_params() :: list()
   def connection_params() do
-    Application.fetch_env!(:rabbits_manager, :connection)
+    Application.fetch_env!(:rabbitmq_manager, :connection)
   end
 
   @spec consumer_params() :: list()
   def consumer_params() do
-    Application.get_env(:rabbits_manager, :consumers, [])
+    Application.get_env(:rabbitmq_manager, :consumers, [])
   end
 
   @spec producer_params() :: list()
   def producer_params() do
-    Application.get_env(:rabbits_manager, :producers, [])
+    Application.get_env(:rabbitmq_manager, :producers, [])
   end
 
   @spec consumer_workers_number() :: integer
