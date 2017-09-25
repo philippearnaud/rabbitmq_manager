@@ -26,13 +26,13 @@ use Mix.Config
 # by uncommenting the line below and defining dev.exs, test.exs and such.
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
-#
-config :rabbitmq_manager,
-       connection: [
-         username: "guest",
-         password: "guest",
-         host: "localhost"
-       ]
+##
+#config :rabbitmq_manager,
+#       connection: [
+#         username: "guest",
+#         password: "guest",
+#         host: "localhost"
+#       ]
 
 ####### CONSUMER KEY : #######
 
@@ -83,43 +83,43 @@ config :rabbitmq_manager,
 # arguments: Defaults to [].
 # TODO : Raise errors if incompatible setup.
 # TODO : if no exchanges
-config :rabbitmq_manager,
-       consumers: [
-         [
-           workers: 2,
-           receive: ProductStore.Consumer,
-           prefetch_count: 35_000,
-           queue: {"product_in_queue", [durable: true]},
-           exchanges: [{"product_in_exchange", :fanout, [durable: true]}],
-           bindings: [
-             {:queue, "product_in_queue", "product_in_exchange", [routing_key: "", arguments: []]}
-           ]
-         ],
-         [
-           workers: 2,
-           receive: ProductStore1.Consumer,
-           prefetch_count: 35_000,
-           queue: {"product_in_queue_2", [durable: true]},
-           exchanges: [
-             {"product_in_exchange_2", :fanout, [durable: true]},
-             {"product_in_exchange_3", :topic, []}
-           ],
-           bindings: [
-             {
-               :queue,
-               "product_in_queue_2",
-               "product_in_exchange_2",
-               [routing_key: "", arguments: []]
-             },
-             {
-               :exchange,
-               "product_in_exchange_2",
-               "product_in_exchange_3",
-               [routing_key: "", arguments: []]
-             }
-           ]
-         ]
-       ]
+#config :rabbitmq_manager,
+#       consumers: [
+#         [
+#           workers: 2,
+#           receive: ProductStore.Consumer,
+#           prefetch_count: 35_000,
+#           queue: {"product_in_queue", [durable: true]},
+#           exchanges: [{"product_in_exchange", :fanout, [durable: true]}],
+#           bindings: [
+#             {:queue, "product_in_queue", "product_in_exchange", [routing_key: "", arguments: []]}
+#           ]
+#         ],
+#         [
+#           workers: 2,
+#           receive: ProductStore1.Consumer,
+#           prefetch_count: 35_000,
+#           queue: {"product_in_queue_2", [durable: true]},
+#           exchanges: [
+#             {"product_in_exchange_2", :fanout, [durable: true]},
+#             {"product_in_exchange_3", :topic, []}
+#           ],
+#           bindings: [
+#             {
+#               :queue,
+#               "product_in_queue_2",
+#               "product_in_exchange_2",
+#               [routing_key: "", arguments: []]
+#             },
+#             {
+#               :exchange,
+#               "product_in_exchange_2",
+#               "product_in_exchange_3",
+#               [routing_key: "", arguments: []]
+#             }
+#           ]
+#         ]
+#       ]
 
 ###### RABBITS MANAGER PRODUCER CONFIG ######
 #
@@ -133,20 +133,20 @@ config :rabbitmq_manager,
 # - persistent : boolean
 # - mandatory : boolean
 # - immediate : boolean
-config :rabbitmq_manager,
-       producers: [
-         [
-           key: :product_in,
-           routing_key: "",
-           publish_options: [
-             persistent: false,
-           ],
-           confirm_mode: true,
-           queue: {"product_in_queue", [durable: true]},
-           exchange: {"product_in_exchange", :fanout, [durable: true]},
-           bindings: [
-             {:queue, "product_in_queue", "product_in_exchange", [routing_key: "", arguments: []]}
-           ]
-         ]
-       ]
+#config :rabbitmq_manager,
+#       producers: [
+#         [
+#           key: :product_in,
+#           routing_key: "",
+#           publish_options: [
+#             persistent: false,
+#           ],
+#           confirm_mode: true,
+#           queue: {"product_in_queue", [durable: true]},
+#           exchange: {"product_in_exchange", :fanout, [durable: true]},
+#           bindings: [
+#             {:queue, "product_in_queue", "product_in_exchange", [routing_key: "", arguments: []]}
+#           ]
+#         ]
+#       ]
 
