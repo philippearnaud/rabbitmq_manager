@@ -58,13 +58,18 @@ defmodule RabbitsManager.Consumer.Worker do
   def setup_consumer_config(state, connection) do
     {:ok, channel} = Channel.open(connection)
     Config.declare_queue_and_exchanges(:consumer, channel, state)
-    register_server_process_as_consumer(channel, state[:queue], state, 0)
+    register_server_process_as_consumer(channel, state[:queue], state)
     {:ok, channel}
   end
 
-  @spec register_server_process_as_consumer(%Channel{}, tuple(), list(), integer()) :: {:ok, any}
-  defp register_server_process_as_consumer(channel, queue, state, counter) do
-    {:ok, consumer_tag} = Basic.consume(channel, elem(queue, 0), nil, [consumer_tag: "#{state[:receive]}@#{counter}"])
+  @spec register_server_process_as_consumer(%Channel{}, tuple(), list()) :: {:ok, any}
+  defp register_server_process_as_consumer(channel, queue, state) do
+    {:ok, consumer_tag} = Basic.consume(
+      channel,
+      elem(queue, 0),
+      nil,
+      [consumer_tag: "#{state[:receive]}@#{state[:counter]}"]
+    )
     Logger.info "#{consumer_tag} consumer correctly registered"
     {:ok, consumer_tag}
   end
@@ -76,8 +81,8 @@ defmodule RabbitsManager.Consumer.Worker do
   end
 
   # Confirmation sent by the broker after registering the process as a consumer.
-  def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, state) do
-    Logger.info "Basic_consume_ok"
+  def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, state) do
+    Logger.info "#{consumer_tag} : Basic_consume_ok"
     {:noreply, state}
   end
 

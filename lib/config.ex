@@ -87,7 +87,7 @@ defmodule RabbitsManager.Config do
          fn (counter) ->
            %{
              id: String.to_atom("#{consumer_pattern[:receive]}_consumer_worker_#{counter}"),
-             start: {ConsumerWorker, :start_link, [consumer_pattern]},
+             start: {ConsumerWorker, :start_link, [Keyword.merge(consumer_pattern, [counter: counter])]},
              restart: :permanent,
              shutdown: 5_000,
              type: :worker
