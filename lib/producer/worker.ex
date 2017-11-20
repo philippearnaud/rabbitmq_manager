@@ -20,18 +20,18 @@ defmodule RabbitsManager.Producer.Worker do
   ### CAUSE IT WILL IMPACT STABILITY OF THE SYSTEM.
   ### RESTARTING A PROCESS IS ABOUT BRINGINT IT BACK TO A STABLE STATE.
   def init(state) do
-    Process.send(self(), :init_consumer, [])
+    Process.send(self(), :init_producer, [])
     {:ok, state}
   end
 
   ##### 2. GenServer callbacks ####
-  def handle_info(:init_consumer, state) do
-    new_state = init_consumer(state)
+  def handle_info(:init_producer, state) do
+    new_state = init_producer(state)
     {:noreply, new_state}
   end
 
-  @spec init_consumer(list()) :: list()
-  def init_consumer(state) do
+  @spec init_producer(list()) :: list()
+  def init_producer(state) do
     connection_result = ConnectionManager.get_connection()
     new_state = case connection_result do
       {:ok, connection} ->
@@ -40,7 +40,7 @@ defmodule RabbitsManager.Producer.Worker do
         Keyword.merge(state, [connection: connection, channel: channel])
       {:error, :not_connected} ->
         Logger.warn "#{__MODULE__} : Channel could not be established. Waiting for connection."
-        Process.send_after(self(), :init_consumer, 10_000)
+        Process.send_after(self(), :init_producer, 10_000)
         state
     end
   end
