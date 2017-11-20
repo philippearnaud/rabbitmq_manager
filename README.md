@@ -11,7 +11,7 @@ by adding `rabbitmq_manager` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:rabbitmq_manager, github: "https://github.com/philippearnaud/rabbitmq_manager"}
+    {:rabbitmq_manager, git: "git@github.com:philippearnaud/rabbitmq_manager.git"}
   ]
 end
 ```

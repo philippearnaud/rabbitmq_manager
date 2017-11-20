@@ -27,11 +27,43 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 ##
+config :rabbitmq_manager,
+       connection: [
+         username: "guest",
+         password: "guest",
+         host: "localhost"
+       ]
+
+
 #config :rabbitmq_manager,
-#       connection: [
-#         username: "guest",
-#         password: "guest",
-#         host: "localhost"
+#       consumers: [
+#         [
+#           workers: 1,
+#           receive: StringChecker.Consumer,
+#           prefetch_count: 35_000,
+#           queues: [
+#             {
+#               "string_checker_queue_error",
+#               [
+#                 durable: true
+#               ]
+#             },
+#             {
+#               "string_checker_queue",
+#               [
+#                 durable: true,
+#                 arguments: [
+#                   {"x-dead-letter-exchange", :longstr, ""},
+#                   {"x-dead-letter-routing-key", :longstr, "string_checker_queue_error"}
+#                 ]
+#               ]
+#             }
+#           ],
+#           exchanges: [{"product_store_exchange", :fanout, [durable: true]}],
+#           bindings: [
+#             {:queue, "string_checker_queue", "product_store_exchange", [routing_key: "", arguments: []]}
+#           ]
+#         ],
 #       ]
 
 ####### CONSUMER KEY : #######
@@ -40,7 +72,9 @@ use Mix.Config
 #  receive - (module) receiving module implementing consume/1
 #  prefetch_count: (integer) limit the number of acknowledged messages to
 #  the value given.
-#  queues - list of tuples containing declaration of queue. the format of the tuple is
+#  queues - list of tuples containing declaration of queue. the format of the tuple is. Queues limit are
+# 2, the queue and its eventually error queue for dead lettering. If dead lettering, do not forget to define
+# dead letter args.
 #  {name_of_queue, options}. Queues options are a keyword list and are described below.
 #  exchanges - list of tuples containing declaration of each exchange. The format of the tuple
 #  is {name_of_exchange, type, options}.
