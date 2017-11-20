@@ -58,7 +58,8 @@ defmodule RabbitsManager.Consumer.Worker do
   def setup_consumer_config(state, connection) do
     {:ok, channel} = Channel.open(connection)
     Config.declare_queue_and_exchanges(:consumer, channel, state)
-    register_server_process_as_consumer(channel, state[:queue], state)
+    non_error_queue = if (is_list(state[:queues])), do: List.last(state[:queues]), else: state[:queues]
+    register_server_process_as_consumer(channel, non_error_queue, state)
     {:ok, channel}
   end
 

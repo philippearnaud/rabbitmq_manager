@@ -27,8 +27,6 @@ defmodule RabbitsManager.ConnectionManager do
   ### CAUSE IT WILL IMPACT STABILITY OF THE SYSTEM.
   ### RESTARTING A PROCESS IS ABOUT BRINGING IT BACK TO A STABLE STATE.
   def init(auth_params) do
-    ## We check config and stop supervised process if any errors found.
-    Config.check!
     Process.send(self(), :connect, [])
     {:ok, [auth: auth_params, connection: nil]}
   end

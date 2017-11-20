@@ -2,48 +2,10 @@ defmodule RabbitsManager.Config do
   @moduledoc """
   Config helpers.
   """
-  alias RabbitsManager.{ConsumerConfigError, ProducerConfigError, StandardConfigError}
   alias RabbitsManager.Producer.Worker, as: ProducerWorker
   alias RabbitsManager.Consumer.Worker, as: ConsumerWorker
   use AMQP
   require Logger
-
-  @spec check!() :: any()
-  def check!() do
-    consumer_config = Application.get_env(:rabbitmq_manager, :consumers)
-    producer_config = Application.get_env(:rabbitmq_manager, :producers)
-    _auth_config = Application.get_env(:rabbitmq_manager, :connection)
-
-    #    cond do
-    #      # A consumer or/and producer must be set.
-    #      is_nil(consumer_config) and is_nil(producer_config) ->
-    #        raise StandardConfigError
-    #      # If consumer, one queue in consumer must be set.
-    #      !is_nil(consumer_config) && all_consumer_config_has_queue? ->
-    #        raise ConsumerConfigError, {"queue", "nil"}
-    #      # At least one exchange in consumer must be set.
-    #      !is_nil(consumer_config) && is_nil(Keyword.get(consumer_config, :exchanges)) ->
-    #   ex     raise ConsumerConfigError, {"exchange", "nil"}
-    #      # At least one queue must be set in producer.
-    #      !is_nil(producer_config) && is_nil(Keyword.get(producer_config, :queue)) ->
-    #        raise ProducerConfigError, {"queue", "nil"}
-    #      # At least one exchange must be set in producer.
-    #      !is_nil(producer_config) && is_nil(Keyword.get(producer_config, :exchanges)) ->
-    #        raise ProducerConfigError, {"exchange", "nil"}
-    #      true ->
-    #        nil
-    #    end
-  end
-
-  @spec all_consumer_config_has_queue? :: boolean
-  def all_consumer_config_has_queue? do
-    consumer_params()
-    |> Enum.all?(
-         fn (consumer) ->
-           !is_nil(consumer[:queue])
-         end
-       )
-  end
 
   @spec connection_params :: list()
   def connection_params do
@@ -58,15 +20,6 @@ defmodule RabbitsManager.Config do
   @spec producer_params :: list()
   def producer_params do
     Application.get_env(:rabbitmq_manager, :producers, [])
-  end
-
-  @spec consumer_workers_number :: integer
-  def consumer_workers_number do
-    consumer_config = consumer_params
-    case Keyword.get(consumer_config, :workers) do
-      nil -> 1
-      value -> value
-    end
   end
 
   @spec create_consumers_supervised_specs :: map()
@@ -118,12 +71,12 @@ defmodule RabbitsManager.Config do
       :consumer ->
         channel
         |> declare_qos(state[:prefetch_count])
-        |> declare_queue(state[:queue])
+        |> declare_queues(state[:queues])
         |> declare_exchanges(state[:exchanges])
         |> declare_bindings(state[:bindings])
       :producer ->
         channel
-        |> declare_queue(state[:queue])
+        |> declare_queues(state[:queues])
         |> declare_exchanges(state[:exchange])
         |> declare_bindings(state[:bindings])
     end
@@ -135,8 +88,14 @@ defmodule RabbitsManager.Config do
     channel
   end
 
-  @spec declare_queue(%AMQP.Channel{}, list()) :: %AMQP.Channel{}
-  defp declare_queue(channel, queue) do
+  @spec declare_queues(%AMQP.Channel{}, list() | tuple()) :: %AMQP.Channel{}
+  defp declare_queues(channel, []), do: channel
+  defp declare_queues(channel, [h | t]) do
+    Queue.declare(channel, elem(h, 0), elem(h, 1))
+    Logger.info "#{__MODULE__} Queue #{elem(h, 0)} declared in #{inspect channel}"
+    declare_queues(channel, t)
+  end
+  defp declare_queues(channel, queue) when is_tuple(queue) do
     Queue.declare(channel, elem(queue, 0), elem(queue, 1))
     Logger.info "#{__MODULE__} Queue #{elem(queue, 0)} declared in #{inspect channel}"
     channel

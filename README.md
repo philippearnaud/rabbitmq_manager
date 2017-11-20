@@ -11,7 +11,7 @@ by adding `rabbitmq_manager` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:rabbitmq_manager, "~> 0.1.0"}
+    {:rabbitmq_manager, github: "https://github.com/philippearnaud/rabbitmq_manager"}
   ]
 end
 ```
@@ -69,16 +69,23 @@ config :rabbitmq_manager,
 - `:queues` - list of tuples containing declaration of queue. the format of the tuple is
   {name_of_queue, options}. Queues options are a keyword list and are described below.
   exchanges - list of tuples containing declaration of each exchange. The format of the tuple
-  is {name_of_exchange, type, options}.
-  - `:name_of_exchange` : (string) whatever is the name of your exchange.
+  is {name_of_exchange, type, options}. Limited to 2 (queue and its error queue)
+  - If you want dead-lettering you must pass dead-letterings arguments. Don't forget to add a error queue in queues list.
+      ```elixir 
+      arguments: [
+               {"x-dead-letter-exchange", :longstr, ""},
+               {"x-dead-letter-routing-key", :longstr, "queue_name_error"}
+             ]
+       ```
+- `:name_of_exchange` : (string) whatever is the name of your exchange.
   - `:type` : (atom)
-    - :topic - Topic exchanges route messages to queues based on wildcard matches between
-    the routing key and something called the routing pattern specified by the queue binding.
+  - `:topic` - Topic exchanges route messages to queues based on wildcard matches between
+   the routing key and something called the routing pattern specified by the queue binding.
     Messages are routed to one or many queues based on a matching between a message routing key and this pattern.
-    - :fanout - Messages delivered to all queues binded to exchange of this type.
-    - :direct - routing key must be provided with the published message and be setup with the exchange.
+  - `:fanout` - Messages delivered to all queues binded to exchange of this type.
+  - `:direct` - routing key must be provided with the published message and be setup with the exchange.
  Messages delivered to all queues binded to such exchanges.
-    - :header - Headers exchanges route based on arguments containing headers and optional values.
+  - `:header` - Headers exchanges route based on arguments containing headers and optional values.
      Headers exchanges are very similar to topic exchanges, but it routes based on header values instead of routing keys.
       A message is considered matching if the value of the header equals the value specified upon binding.
    bindings - to be routed to queue, a binding must be declared between an exchange and a queue. list of
@@ -192,6 +199,9 @@ Here is how consuming is implemented :
       :ok ->
         Basic.ack channel, tag
       :error ->
+      #Note : Msg won't be dead-lettered after to an error queue if the error queue is not defined in consumer key and if no dead-lettering
+      # args are not passed to queue configuration in consumers key. If all is properly defined, then reject with requeue false
+      # will trigger dead lettering. 
         Basic.reject channel, tag, requeue: false
     end
   rescue
