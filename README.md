@@ -213,6 +213,23 @@ Here is how consuming is implemented :
 ```
 
 Here is an example of a receive function in a receiving module.
+
+Note : When the channel is in confirm_mode, the publisher should expect 
+to receive basic.ack methods for messages send. When such methods are triggered
+it implies that the published message has been handled successfully. Meaning :
+- an un-routable mandatory or immediate message is confirmed right after the basic.return;
+- otherwise, a transient message is confirmed the moment it is enqueued; and,
+- a persistent message is confirmed when it is persisted to disk or when it is consumed on every queue.
+
+Disavantages :
+- There are no guarantees when the message will be confirmed, but it will be confirmed. 
+- Message slows down as un-confirmed messages pile up. Each time a confirms happens, 
+it takes O(log(number_of_unconfirmed_messages)).
+- Thirdly, if the connection between the publisher and broker drops with outstanding confirms, 
+it does not necessarily mean that the messages were lost, so republishing may result in duplicate messages.
+It implies that all messages must be treated by consumer idempotently. 
+-  Lastly, if something bad should happen inside the broker and cause it to lose messages, 
+it will basic.nack those messages (hence, the handleNack() in ConfirmHandler).
 ```elixir
 defmodule ReceivingModule do
 
