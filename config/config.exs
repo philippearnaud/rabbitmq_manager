@@ -27,12 +27,44 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 ##
-config :rabbitmq_manager,
-       connection: [
-         username: "guest",
-         password: "guest",
-         host: "localhost"
-       ]
+#config :rabbitmq_manager,
+#       connection: [
+#         username: "guest",
+#         password: "guest",
+#         host: "localhost"
+#       ]
+
+
+#config :rabbitmq_manager,
+#       consumers: [
+#         [
+#           workers: 1,
+#           receive: StringChecker.Consumer,
+#           prefetch_count: 35_000,
+#           queues: [
+#             {
+#               "string_checker_queue_error",
+#               [
+#                 durable: true
+#               ]
+#             },
+#             {
+#               "string_checker_queue",
+#               [
+#                 durable: true,
+#                 arguments: [
+#                   {"x-dead-letter-exchange", :longstr, ""},
+#                   {"x-dead-letter-routing-key", :longstr, "string_checker_queue_error"}
+#                 ]
+#               ]
+#             }
+#           ],
+#           exchanges: [{"product_store_exchange", :fanout, [durable: true]}],
+#           bindings: [
+#             {:queue, "string_checker_queue", "product_store_exchange", [routing_key: "", arguments: []]}
+#           ]
+#         ],
+#       ]
 
 
 #config :rabbitmq_manager,
