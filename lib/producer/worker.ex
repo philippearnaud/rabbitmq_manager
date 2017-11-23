@@ -10,6 +10,7 @@ defmodule RabbitsManager.Producer.Worker do
   use AMQP
 
   alias RabbitsManager.{ConnectionManager, Config}
+  alias RabbitsManager.Producer.Messages
 
   def start_link(producer_pattern) do
     GenServer.start_link(__MODULE__, producer_pattern, name: producer_pattern[:key])
@@ -29,9 +30,49 @@ defmodule RabbitsManager.Producer.Worker do
     new_state = init_producer(state)
     {:noreply, new_state}
   end
+  # If system down, then crash.
+  def handle_info({:DOWN, _, :process, _pid, _reason}, state)  do
+    {:stop, :normal, state}
+  end
+
+  def handle_call(:is_confirm_mode?, _from, state) do
+    {:reply, Keyword.get(state, :confirm_mode, false), state}
+  end
+  def handle_cast({:msg, payload, routing_key}, state) do
+    key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
+    Basic.publish(
+      state[:channel],
+      elem(state[:exchange], 0),
+      key_rounting,
+      payload,
+      state[:publish_options]
+    )
+    {:noreply, state}
+  end
+
+  def handle_call({:msg, payload, routing_key}, _from, state) do
+    key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
+    Basic.publish(
+      state[:channel],
+      elem(state[:exchange], 0),
+      key_rounting,
+      payload,
+      state[:publish_options]
+    )
+    reply = Confirm.wait_for_confirms(
+      state[:channel],
+      Keyword.get(state, :confirm_timeout, 5_000)
+    )
+    {:reply, reply, state}
+  end
 
   @spec init_producer(list()) :: list()
   def init_producer(state) do
+    # We link the connection process to the worker one to be notified when down.
+    :rmq_connection_manager
+    |> GenServer.whereis()
+    |> Process.monitor()
+
     connection_result = ConnectionManager.get_connection()
     new_state = case connection_result do
       {:ok, connection} ->
@@ -62,25 +103,5 @@ defmodule RabbitsManager.Producer.Worker do
       false ->
         GenServer.cast(key, {:msg, payload, routing_key})
     end
-  end
-
-  def handle_call(:is_confirm_mode?, _from, state) do
-    {:reply, Keyword.get(state, :confirm_mode, false), state}
-  end
-
-  def handle_cast({:msg, payload, routing_key}, state) do
-    key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
-    Basic.publish(state[:channel], elem(state[:exchange], 0),
-      key_rounting, payload, state[:publish_options])
-    {:noreply, state}
-  end
-
-  def handle_call({:msg, payload, routing_key}, _from, state) do
-    key_rounting = if routing_key == "", do: state[:routing_key], else: routing_key
-    Basic.publish(state[:channel], elem(state[:exchange], 0),
-      key_rounting, payload, state[:publish_options])
-    reply = Confirm.wait_for_confirms(state[:channel],
-      Keyword.get(state, :confirm_timeout, 5_000))
-    {:reply, reply, state}
   end
 end

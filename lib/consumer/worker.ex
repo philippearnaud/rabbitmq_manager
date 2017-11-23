@@ -6,7 +6,7 @@ defmodule RabbitsManager.Consumer.Worker do
   informations defined in config file for the given consumers.
   """
   require Logger
-  use GenServer, restart: :permanent
+  use GenServer
   use AMQP
 
   alias RabbitsManager.{ConnectionManager, Config}
