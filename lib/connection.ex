@@ -64,10 +64,9 @@ defmodule RabbitsManager.ConnectionManager do
     {:reply, get_connection(state[:connection]), state}
   end
 
-  # If system down, then try to reconnect.
+  # If system down, then crash.
   def handle_info({:DOWN, _, :process, _pid, _reason}, state)  do
-    {_, connection} = connect
-    {:noreply, Keyword.merge(state, [connection: connection])}
+    {:stop, :normal, state}
   end
 
   # Allow connecting.
