@@ -6,7 +6,7 @@ defmodule RabbitsManager.Consumer.Worker do
   informations defined in config file for the given consumers.
   """
   require Logger
-  use GenServer
+  use GenServer, restart: :permanent
   use AMQP
 
   alias RabbitsManager.{ConnectionManager, Config}
@@ -26,6 +26,11 @@ defmodule RabbitsManager.Consumer.Worker do
 
   @spec init_consumer(list) :: list()
   def init_consumer(state) do
+    # We link the connection process to the worker one to be notified when down.
+    :rmq_connection_manager
+    |> GenServer.whereis()
+    |> Process.monitor()
+    # We get the connection
     connection_result = ConnectionManager.get_connection()
     case connection_result do
       {:ok, connection} ->
@@ -76,6 +81,11 @@ defmodule RabbitsManager.Consumer.Worker do
   end
 
   ##### 2. GenServer callbacks ####
+  # If system down, then crash.
+  def handle_info({:DOWN, _, :process, _pid, _reason}, state)  do
+    {:stop, :normal, state}
+  end
+
   def handle_info(:init_consumer, state) do
     new_state = init_consumer(state)
     {:noreply, new_state}
